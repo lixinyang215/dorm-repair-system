@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}数据看板{% endblock %}
+{% block page_title %}数据看板{% endblock %}
+{% block content %}
+<div class="stat-grid">
+  <div class="stat-card"><div class="stat-label">报修总量</div><div class="stat-value">{{ total }}</div></div>
+  <div class="stat-card warning"><div class="stat-label">待处理</div><div class="stat-value">{{ pending }}</div></div>
+  <div class="stat-card"><div class="stat-label">处理中</div><div class="stat-value">{{ processing }}</div></div>
+  <div class="stat-card success"><div class="stat-label">已完成</div><div class="stat-value">{{ completed }}</div></div>
+  <div class="stat-card danger"><div class="stat-label">平均维修时效</div><div class="stat-value">{{ avg_dur }} 分钟</div></div>
+</div>
+
+<div class="chart-row">
+  <div class="chart-box">
+    <h3>近 7 天报修量趋势</h3>
+    <canvas id="trendChart" height="200"></canvas>
+  </div>
+  <div class="chart-box">
+    <h3>故障分类占比</h3>
+    <canvas id="faultChart" height="200"></canvas>
+  </div>
+</div>
+
+<div class="chart-row">
+  <div class="chart-box">
+    <h3>工单状态分布</h3>
+    <canvas id="statusChart" height="200"></canvas>
+  </div>
+  <div class="chart-box">
+    <h3>故障类型数量明细</h3>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>故障类型</th><th>数量</th><th>占比</th></tr></thead>
+        <tbody>
+          {% for f, d in fault_labels|zip(fault_data) %}
+          <tr>
+            <td>{{ f }}</td>
+            <td>{{ d }}</td>
+            <td>{{ '%.1f' % (d / total * 100) if total else 0 }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const statusColors = {
+  'pending':'#f59e0b','accepted':'#3b82f6','repairing':'#6366f1',
+  'waiting_confirm':'#ec4899','completed':'#22c55e','cancelled':'#9ca3af'
+};
+const statusLabels = {
+  'pending':'待接单','accepted':'已接单','repairing':'维修中',
+  'waiting_confirm':'待验收','completed':'已完成','cancelled':'已取消'
+};
+
+const trendLabels = {{ trend_labels|tojson }};
+const trendData = {{ trend_data|tojson }};
+const faultLabels = {{ fault_labels|tojson }};
+const faultData = {{ fault_data|tojson }};
+const statusStats = {{ status_stats|tojson }};
+
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: { labels: trendLabels, datasets: [{
+    label: '报修量', data: trendData, borderColor: '#2563eb',
+    backgroundColor: 'rgba(37,99,235,.1)', fill: true, tension: .3
+  }]},
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+
+new Chart(document.getElementById('faultChart'), {
+  type: 'doughnut',
+  data: { labels: faultLabels, datasets: [{
+    data: faultData,
+    backgroundColor: ['#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6','#6b7280']
+  }]},
+  options: { plugins: { legend: { position: 'bottom' } } }
+});
+
+new Chart(document.getElementById('statusChart'), {
+  type: 'bar',
+  data: {
+    labels: statusStats.map(s => statusLabels[s.status] || s.status),
+    datasets: [{ label: '工单数', data: statusStats.map(s => s.c),
+      backgroundColor: statusStats.map(s => statusColors[s.status] || '#6b7280') }]
+  },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+</script>
+{% endblock %}

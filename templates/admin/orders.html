@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}全部工单{% endblock %}
+{% block page_title %}全部工单{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <span>工单查询</span>
+    <a href="{{ url_for('admin_export_orders', status=status, building=building, fault_type=fault_type) }}" class="btn btn-success btn-sm">📥 导出 Excel</a>
+  </div>
+  <div class="card-body">
+    <form method="get" class="filter-bar">
+      <div class="form-group">
+        <label>状态</label>
+        <select name="status" class="form-control">
+          <option value="">全部</option>
+          {% for s in ['pending','accepted','repairing','waiting_confirm','completed','cancelled'] %}
+          <option value="{{ s }}" {% if status==s %}selected{% endif %}>{{ {'pending':'待接单','accepted':'已接单','repairing':'维修中','waiting_confirm':'待验收','completed':'已完成','cancelled':'已取消'}[s] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>楼栋</label>
+        <select name="building" class="form-control">
+          <option value="">全部</option>
+          {% for b in buildings %}
+          <option value="{{ b }}" {% if building==b %}selected{% endif %}>{{ b }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>故障类型</label>
+        <select name="fault_type" class="form-control">
+          <option value="">全部</option>
+          {% for f in fault_types %}
+          <option value="{{ f }}" {% if fault_type==f %}selected{% endif %}>{{ f }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">查询</button>
+    </form>
+
+    {% if orders %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr><th>工单号</th><th>报修人</th><th>楼栋</th><th>位置</th><th>故障类型</th><th>状态</th><th>处理人</th><th>提交时间</th><th>维修用时</th></tr>
+        </thead>
+        <tbody>
+          {% for o in orders %}
+          <tr>
+            <td>{{ o.work_order_no }}</td>
+            <td>{{ o.reporter_name }}</td>
+            <td>{{ o.building }}</td>
+            <td>{{ o.location }}</td>
+            <td>{{ o.fault_type }}</td>
+            <td><span class="status status-{{ o.status }}">
+              {{ {'pending':'待接单','accepted':'已接单','repairing':'维修中','waiting_confirm':'待验收','completed':'已完成','cancelled':'已取消'}[o.status] }}
+            </span></td>
+            <td>{{ o.handler_name or '-' }}</td>
+            <td>{{ o.created_at }}</td>
+            <td>{{ o.duration_min ~ ' 分钟' if o.duration_min else '-' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:10px;color:var(--text-muted);font-size:13px;">共 {{ orders|length }} 条记录（最多显示 500 条）</p>
+    {% else %}
+    <div class="empty"><div class="icon">📋</div>暂无工单</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}账号管理{% endblock %}
+{% block page_title %}账号管理{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <div class="tabs">
+      <div class="tab {% if role=='student' %}active{% endif %}" onclick="location='{{ url_for('admin_users', role='student') }}'">学生</div>
+      <div class="tab {% if role=='dorm_manager' %}active{% endif %}" onclick="location='{{ url_for('admin_users', role='dorm_manager') }}'">宿管</div>
+      <div class="tab {% if role=='admin' %}active{% endif %}" onclick="location='{{ url_for('admin_users', role='admin') }}'">管理员</div>
+    </div>
+
+    <button class="btn btn-primary btn-sm" onclick="document.getElementById('create-form').style.display='block'">+ 新增账号</button>
+
+    <div id="create-form" style="display:none;margin-top:14px;padding:16px;background:#f8fafc;border-radius:8px;">
+      <form method="post" action="{{ url_for('admin_user_create') }}">
+        <input type="hidden" name="role" value="{{ role }}">
+        <div class="form-row">
+          <div class="form-group"><label>用户名 *</label><input type="text" name="username" class="form-control" required></div>
+          <div class="form-group"><label>密码 *</label><input type="text" name="password" class="form-control" required value="123456"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>姓名 *</label><input type="text" name="name" class="form-control" required></div>
+          <div class="form-group">
+            <label>{% if role=='dorm_manager' %}负责楼栋{% elif role=='student' %}所住楼栋{% else %}备注{% endif %}</label>
+            {% if role in ['dorm_manager','student'] %}
+            <select name="building" class="form-control">
+              <option value="">无</option>
+              {% for b in buildings %}<option value="{{ b }}">{{ b }}</option>{% endfor %}
+            </select>
+            {% else %}
+            <input type="text" name="building" class="form-control">
+            {% endif %}
+          </div>
+        </div>
+        <div class="form-group"><label>联系电话</label><input type="text" name="phone" class="form-control"></div>
+        <button type="submit" class="btn btn-primary btn-sm">创建</button>
+        <button type="button" class="btn btn-default btn-sm" onclick="this.parentElement.parentElement.style.display='none'">取消</button>
+      </form>
+    </div>
+
+    <div class="table-wrap" style="margin-top:16px;">
+      <table class="data-table">
+        <thead>
+          <tr><th>用户名</th><th>姓名</th>{% if role != 'admin' %}<th>楼栋</th>{% endif %}<th>电话</th><th>状态</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.username }}</td>
+            <td>{{ u.name }}</td>
+            {% if role != 'admin' %}<td>{{ u.building or '-' }}</td>{% endif %}
+            <td>{{ u.phone or '-' }}</td>
+            <td>
+              {% if u.status == 'active' %}<span class="status status-completed">正常</span>
+              {% else %}<span class="status status-cancelled">禁用</span>{% endif %}
+            </td>
+            <td style="display:flex;gap:6px;">
+              <form method="post" action="{{ url_for('admin_user_toggle', user_id=u.id) }}" style="display:inline;">
+                <button type="submit" class="btn btn-default btn-sm">{% if u.status=='active' %}禁用{% else %}启用{% endif %}</button>
+              </form>
+              <form method="post" action="{{ url_for('admin_user_reset_password', user_id=u.id) }}" style="display:inline;" onsubmit="return confirm('重置密码为 123456？')">
+                <button type="submit" class="btn btn-default btn-sm">重置密码</button>
+              </form>
+              <form method="post" action="{{ url_for('admin_user_delete', user_id=u.id) }}" style="display:inline;" onsubmit="return confirm('确认删除该账号？')">
+                <button type="submit" class="btn btn-danger btn-sm">删除</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

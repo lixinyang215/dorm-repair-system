@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}基础配置{% endblock %}
+{% block page_title %}基础配置{% endblock %}
+{% block content %}
+<div class="chart-row">
+  <div class="chart-box">
+    <h3>楼栋管理</h3>
+    <form method="post" action="{{ url_for('admin_add_building') }}" style="display:flex;gap:8px;margin-bottom:12px;">
+      <input type="text" name="name" class="form-control" placeholder="如：6栋" required>
+      <button type="submit" class="btn btn-primary btn-sm">添加</button>
+    </form>
+    <table class="data-table">
+      <thead><tr><th>ID</th><th>楼栋名称</th></tr></thead>
+      <tbody>
+        {% for b in buildings %}
+        <tr><td>{{ b.id }}</td><td>{{ b.name }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <h3 style="margin-top:20px;">楼栋-宿管对应</h3>
+    <table class="data-table">
+      <thead><tr><th>宿管</th><th>负责楼栋</th></tr></thead>
+      <tbody>
+        {% for m in managers %}
+        <tr><td>{{ m.name }}</td><td>{{ m.building or '未分配' }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="chart-box">
+    <h3>故障类型管理</h3>
+    <form method="post" action="{{ url_for('admin_add_fault_type') }}" style="display:flex;gap:8px;margin-bottom:12px;">
+      <input type="text" name="name" class="form-control" placeholder="如：锁具" required>
+      <button type="submit" class="btn btn-primary btn-sm">添加</button>
+    </form>
+    <table class="data-table">
+      <thead><tr><th>ID</th><th>故障类型</th></tr></thead>
+      <tbody>
+        {% for f in fault_types %}
+        <tr><td>{{ f.id }}</td><td>{{ f.name }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

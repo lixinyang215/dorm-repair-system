@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}宿舍报修管理系统{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">🏠</div>
+      <div>
+        <h1>宿舍报修系统</h1>
+        <p>Dorm Repair System</p>
+      </div>
+    </div>
+    <nav>
+      {% if session.role == 'student' %}
+        <a href="{{ url_for('student_orders') }}" class="{% if request.endpoint == 'student_orders' %}active{% endif %}">📋 我的工单</a>
+        <a href="{{ url_for('student_new_order') }}" class="{% if request.endpoint == 'student_new_order' %}active{% endif %}">➕ 新建报修</a>
+      {% elif session.role == 'dorm_manager' %}
+        <a href="{{ url_for('manager_pending') }}" class="{% if request.endpoint == 'manager_pending' %}active{% endif %}">📥 待接单</a>
+        <a href="{{ url_for('manager_accepted') }}" class="{% if request.endpoint == 'manager_accepted' %}active{% endif %}">🔧 维修中</a>
+        <a href="{{ url_for('manager_history') }}" class="{% if request.endpoint == 'manager_history' %}active{% endif %}">📜 历史记录</a>
+      {% elif session.role == 'admin' %}
+        <a href="{{ url_for('admin_dashboard') }}" class="{% if request.endpoint == 'admin_dashboard' %}active{% endif %}">📊 数据看板</a>
+        <a href="{{ url_for('admin_orders') }}" class="{% if request.endpoint == 'admin_orders' %}active{% endif %}">📋 全部工单</a>
+        <a href="{{ url_for('admin_users') }}" class="{% if request.endpoint == 'admin_users' %}active{% endif %}">👥 账号管理</a>
+        <a href="{{ url_for('admin_config') }}" class="{% if request.endpoint == 'admin_config' %}active{% endif %}">⚙️ 基础配置</a>
+      {% endif %}
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">{% block page_title %}{% endblock %}</div>
+      <div class="topbar-user">
+        <span class="role-badge role-{{ session.role }}">
+          {% if session.role == 'student' %}学生{% elif session.role == 'dorm_manager' %}宿管{% else %}管理员{% endif %}
+        </span>
+        <span class="user-name">{{ session.name }}</span>
+        <a href="{{ url_for('logout') }}" class="logout-btn">退出</a>
+      </div>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, msg in messages %}
+            <div class="flash flash-{{ category }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

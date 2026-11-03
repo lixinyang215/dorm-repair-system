@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}工单详情{% endblock %}
+{% block page_title %}工单详情 - {{ order.work_order_no }}{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <span>工单 {{ order.work_order_no }}</span>
+    <span class="status status-{{ order.status }}">
+      {{ {'pending':'待接单','accepted':'已接单','repairing':'维修中','waiting_confirm':'待验收','completed':'已完成','cancelled':'已取消'}[order.status] }}
+    </span>
+  </div>
+  <div class="card-body">
+    <div class="form-row">
+      <div class="form-group"><label>报修人</label><div>{{ order.reporter_name }}</div></div>
+      <div class="form-group"><label>提交时间</label><div>{{ order.created_at }}</div></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>故障位置</label><div>{{ order.location }}</div></div>
+      <div class="form-group"><label>故障类型</label><div>{{ order.fault_type }}</div></div>
+    </div>
+    <div class="form-group">
+      <label>故障描述</label>
+      <div style="padding:10px;background:#f8fafc;border-radius:6px;">{{ order.description }}</div>
+    </div>
+    {% if before_imgs %}
+    <div class="form-group">
+      <label>现场图片</label>
+      <div>
+        {% for img in before_imgs %}
+        <img src="{{ url_for('uploaded_file', filename=img) }}" class="img-thumb" onclick="window.open(this.src)">
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">处理进度</div>
+  <div class="card-body">
+    <div class="timeline">
+      <div class="timeline-item done">
+        <div class="tl-time">{{ order.created_at }}</div>
+        <div class="tl-title">学生提交报修</div>
+      </div>
+      {% if order.accepted_at %}
+      <div class="timeline-item done">
+        <div class="tl-time">{{ order.accepted_at }}</div>
+        <div class="tl-title">宿管 {{ order.handler_name }} 接单</div>
+      </div>
+      {% endif %}
+      {% if order.repair_started_at %}
+      <div class="timeline-item done">
+        <div class="tl-time">{{ order.repair_started_at }}</div>
+        <div class="tl-title">开始维修</div>
+      </div>
+      {% endif %}
+      {% if order.completed_at %}
+      <div class="timeline-item done">
+        <div class="tl-time">{{ order.completed_at }}</div>
+        <div class="tl-title">维修完成，等待验收</div>
+      </div>
+      {% endif %}
+      {% if order.confirmed_at %}
+      <div class="timeline-item done">
+        <div class="tl-time">{{ order.confirmed_at }}</div>
+        <div class="tl-title">学生确认验收，工单完成</div>
+      </div>
+      {% endif %}
+      {% if order.cancelled_at %}
+      <div class="timeline-item done" style="opacity:.6;">
+        <div class="tl-time">{{ order.cancelled_at }}</div>
+        <div class="tl-title">工单已取消</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if order.repair_content %}
+<div class="card">
+  <div class="card-header">维修记录</div>
+  <div class="card-body">
+    <div class="form-row">
+      <div class="form-group"><label>维修人员</label><div>{{ order.handler_name }}</div></div>
+      <div class="form-group"><label>维修用时</label><div>{{ order.duration_min }} 分钟</div></div>
+    </div>
+    <div class="form-group">
+      <label>维修内容</label>
+      <div style="padding:10px;background:#f8fafc;border-radius:6px;">{{ order.repair_content }}</div>
+    </div>
+    {% if order.parts_replaced %}
+    <div class="form-group">
+      <label>更换配件</label>
+      <div style="padding:10px;background:#f8fafc;border-radius:6px;">{{ order.parts_replaced }}</div>
+    </div>
+    {% endif %}
+    {% if after_imgs %}
+    <div class="form-group">
+      <label>维修后图片</label>
+      <div>
+        {% for img in after_imgs %}
+        <img src="{{ url_for('uploaded_file', filename=img) }}" class="img-thumb" onclick="window.open(this.src)">
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- 操作区 -->
+<div class="card">
+  <div class="card-body" style="display:flex;gap:10px;flex-wrap:wrap;">
+    {% if order.status == 'pending' %}
+    <form method="post" action="{{ url_for('student_cancel_order', order_id=order.id) }}" onsubmit="return confirm('确认取消该工单？')">
+      <button type="submit" class="btn btn-danger">取消工单</button>
+    </form>
+    {% endif %}
+    {% if order.status == 'waiting_confirm' %}
+    <form method="post" action="{{ url_for('student_confirm_order', order_id=order.id) }}">
+      <button type="submit" class="btn btn-success">确认验收</button>
+    </form>
+    {% endif %}
+    {% if order.status == 'completed' %}
+      {% if not evaluation %}
+      <button class="btn btn-primary" onclick="document.getElementById('eval-form').style.display='block'">评价</button>
+      <form id="eval-form" method="post" action="{{ url_for('student_evaluate', order_id=order.id) }}" style="display:none;margin-top:10px;" class="card-body">
+        <div class="form-group">
+          <label>满意度评分</label>
+          <select name="rating" class="form-control">
+            <option value="5">⭐⭐⭐⭐⭐ 非常满意</option>
+            <option value="4">⭐⭐⭐⭐ 满意</option>
+            <option value="3">⭐⭐⭐ 一般</option>
+            <option value="2">⭐⭐ 不满意</option>
+            <option value="1">⭐ 非常不满意</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>评价留言</label>
+          <textarea name="comment" class="form-control" rows="2"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">提交评价</button>
+      </form>
+      {% else %}
+      <div style="color:var(--success);">已评价：{{ '⭐' * evaluation.rating }} {{ evaluation.comment }}</div>
+      {% endif %}
+    {% endif %}
+    <a href="{{ url_for('student_orders') }}" class="btn btn-default">返回列表</a>
+  </div>
+</div>
+{% endblock %}

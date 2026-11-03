@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}我的工单{% endblock %}
+{% block page_title %}我的工单{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <span>工单列表</span>
+    <a href="{{ url_for('student_new_order') }}" class="btn btn-primary btn-sm">+ 新建报修</a>
+  </div>
+  <div class="card-body">
+    <div class="filter-bar">
+      <div class="form-group">
+        <label>状态筛选</label>
+        <select class="form-control" onchange="location=this.value">
+          <option value="{{ url_for('student_orders') }}" {% if not status_filter %}selected{% endif %}>全部</option>
+          {% for s in ['pending','accepted','repairing','waiting_confirm','completed','cancelled'] %}
+          <option value="{{ url_for('student_orders', status=s) }}" {% if status_filter==s %}selected{% endif %}>
+            {{ {'pending':'待接单','accepted':'已接单','repairing':'维修中','waiting_confirm':'待验收','completed':'已完成','cancelled':'已取消'}[s] }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    {% if orders %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr><th>工单号</th><th>故障类型</th><th>位置</th><th>描述</th><th>状态</th><th>提交时间</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+          {% for o in orders %}
+          <tr>
+            <td>{{ o.work_order_no }}</td>
+            <td>{{ o.fault_type }}</td>
+            <td>{{ o.location }}</td>
+            <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ o.description }}</td>
+            <td><span class="status status-{{ o.status }}">
+              {{ {'pending':'待接单','accepted':'已接单','repairing':'维修中','waiting_confirm':'待验收','completed':'已完成','cancelled':'已取消'}[o.status] }}
+            </span></td>
+            <td>{{ o.created_at }}</td>
+            <td><a href="{{ url_for('student_order_detail', order_id=o.id) }}" class="btn btn-default btn-sm">查看</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty"><div class="icon">📋</div>暂无工单</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

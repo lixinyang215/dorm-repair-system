@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 - 宿舍报修管理系统</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="login-page">
+  <div class="login-box">
+    <h1>🏠 宿舍报修管理系统</h1>
+    <p class="sub">Dormitory Repair Management System</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="flash flash-{{ category }}" style="margin-bottom:14px;">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <form method="post">
+      <div class="form-group">
+        <label>用户名</label>
+        <input type="text" name="username" class="form-control" required autofocus placeholder="请输入用户名">
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input type="password" name="password" class="form-control" required placeholder="请输入密码">
+      </div>
+      <button type="submit" class="btn btn-primary">登 录</button>
+    </form>
+    <div class="login-tips">
+      <strong>测试账号：</strong><br>
+      管理员：admin / admin123<br>
+      宿管：manager1 / m123（负责3栋）<br>
+      学生：stu001 / s123（3栋）、stu002 / s123（3栋）
+    </div>
+  </div>
+</body>
+</html>

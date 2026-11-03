@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}待接单工单{% endblock %}
+{% block page_title %}待接单工单（{{ session.building }}）{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">待处理工单</div>
+  <div class="card-body">
+    {% if orders %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr><th>工单号</th><th>报修人</th><th>故障位置</th><th>故障类型</th><th>描述</th><th>提交时间</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+          {% for o in orders %}
+          <tr>
+            <td>{{ o.work_order_no }}</td>
+            <td>{{ o.reporter_name }}</td>
+            <td>{{ o.location }}</td>
+            <td>{{ o.fault_type }}</td>
+            <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ o.description }}</td>
+            <td>{{ o.created_at }}</td>
+            <td>
+              <form method="post" action="{{ url_for('manager_accept', order_id=o.id) }}" style="display:inline;">
+                <button type="submit" class="btn btn-primary btn-sm">接单</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty"><div class="icon">🎉</div>暂无待接单工单</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

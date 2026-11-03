@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}新建报修{% endblock %}
+{% block page_title %}新建报修工单{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">填写报修信息</div>
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data">
+      <div class="form-row">
+        <div class="form-group">
+          <label>所在楼栋 <span class="req">*</span></label>
+          <select name="building" class="form-control" required>
+            <option value="{{ session.building }}" selected>{{ session.building }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>故障类型 <span class="req">*</span></label>
+          <select name="fault_type" class="form-control" required>
+            <option value="">请选择</option>
+            {% for f in fault_types %}
+            <option value="{{ f }}">{{ f }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>故障位置 <span class="req">*</span></label>
+        <input type="text" name="location" class="form-control" required placeholder="如：3栋-305室-卫生间" value="{{ session.building }}-">
+      </div>
+      <div class="form-group">
+        <label>故障描述 <span class="req">*</span></label>
+        <textarea name="description" class="form-control" rows="4" required placeholder="请详细描述故障情况，方便维修人员准备配件"></textarea>
+      </div>
+      <div class="form-group">
+        <label>现场图片</label>
+        <input type="file" name="images" class="form-control" accept="image/*" multiple>
+        <small style="color:var(--text-muted)">支持 jpg/png，最多 5 张，单张 ≤ 5MB</small>
+      </div>
+      <button type="submit" class="btn btn-primary">提交报修</button>
+      <a href="{{ url_for('student_orders') }}" class="btn btn-default">取消</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
