@@ -10,17 +10,28 @@
       <div class="tab {% if role=='admin' %}active{% endif %}" onclick="location='{{ url_for('admin_users', role='admin') }}'">管理员</div>
     </div>
 
-    <button class="btn btn-primary btn-sm" onclick="document.getElementById('create-form').style.display='block'">+ 新增账号</button>
+    <button class="btn btn-primary" onclick="document.getElementById('create-form').style.display='block'">
+      + {% if role=='student' %}新增学生{% elif role=='dorm_manager' %}新增宿管{% else %}新增管理员{% endif %}
+    </button>
 
     <div id="create-form" style="display:none;margin-top:14px;padding:16px;background:#f8fafc;border-radius:8px;">
       <form method="post" action="{{ url_for('admin_user_create') }}">
         <input type="hidden" name="role" value="{{ role }}">
         <div class="form-row">
-          <div class="form-group"><label>用户名 *</label><input type="text" name="username" class="form-control" required></div>
-          <div class="form-group"><label>密码 *</label><input type="text" name="password" class="form-control" required value="123456"></div>
+          <div class="form-group">
+            <label>{% if role=='student' %}学号{% elif role=='dorm_manager' %}工号{% else %}用户名{% endif %} <span class="req">*</span></label>
+            <input type="text" name="username" class="form-control" required placeholder="{% if role=='student' %}如：stu006{% endif %}">
+          </div>
+          <div class="form-group">
+            <label>姓名 <span class="req">*</span></label>
+            <input type="text" name="name" class="form-control" required placeholder="如：张三">
+          </div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>姓名 *</label><input type="text" name="name" class="form-control" required></div>
+          <div class="form-group">
+            <label>密码 <span class="req">*</span></label>
+            <input type="text" name="password" class="form-control" required value="123456">
+          </div>
           <div class="form-group">
             <label>{% if role=='dorm_manager' %}负责楼栋{% elif role=='student' %}所住楼栋{% else %}备注{% endif %}</label>
             {% if role in ['dorm_manager','student'] %}
@@ -34,15 +45,15 @@
           </div>
         </div>
         <div class="form-group"><label>联系电话</label><input type="text" name="phone" class="form-control"></div>
-        <button type="submit" class="btn btn-primary btn-sm">创建</button>
-        <button type="button" class="btn btn-default btn-sm" onclick="this.parentElement.parentElement.style.display='none'">取消</button>
+        <button type="submit" class="btn btn-primary">提交</button>
+        <button type="button" class="btn btn-default" onclick="document.getElementById('create-form').style.display='none'">取消</button>
       </form>
     </div>
 
     <div class="table-wrap" style="margin-top:16px;">
       <table class="data-table">
         <thead>
-          <tr><th>用户名</th><th>姓名</th>{% if role != 'admin' %}<th>楼栋</th>{% endif %}<th>电话</th><th>状态</th><th>操作</th></tr>
+          <tr><th>{% if role=='student' %}学号{% else %}用户名{% endif %}</th><th>姓名</th>{% if role != 'admin' %}<th>楼栋</th>{% endif %}<th>电话</th><th>状态</th><th>操作</th></tr>
         </thead>
         <tbody>
           {% for u in users %}
